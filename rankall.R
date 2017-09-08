@@ -1,32 +1,47 @@
 rankall <- function(outcome, num = "best") {
+  #library(foreach)
   
   table <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
   
-  table<-table[,c(2,11,17,23)]
+  table<-table[,c(2,7,11,17,23)]
   
-  if(outcome == "heart attack"){table<-table[table[,2] != "Not Available",c(1,2,3)]}
-  else if(outcome == "heart failure"){table<-table[table[,3] != "Not Available",c(1,2,4)]}
-  else if(outcome == "pneumonia"){table<-table[table[,4] != "Not Available",c(1,2,5)]}
+  if(outcome == "heart attack"){table<-table[table[,3] != "Not Available",c(1,2,3)]}
+  else if(outcome == "heart failure"){table<-table[table[,4] != "Not Available",c(1,2,4)]}
+  else if(outcome == "pneumonia"){table<-table[table[,5] != "Not Available",c(1,2,5)]}
   else{return("Invalid outcome")}
   
-  table[,2]<-as.numeric(table[,3])
+  table[,3]<-as.numeric(table[,3])
   
   colnames(table)<- c("Hospital","State","Rate")
   
+  table<-table[order(table$State, table$Rate, table$Hospital),]
+  
   states<-unique(table[,2])
+  
+  output_data<-data.frame(matrix(ncol = 2, nrow = 0))
+  #data.frame(matrix(ncol = 10000, nrow = 0))
+  
+  colnames(output_data)<- c("Hospital","State")
+  
+  for(i in 1:length(states)){
+    
+    partial_data<-subset(table, State ==states[i])
+    
+    if(num=="best"){partial_data<-partial_data[1,c(1,2)]}
+    else if(num=="worst"){partial_data<-partial_data[dim(partial_data)[1],c(1,2)]}
+    else if(num>dim(partial_data)[1]){
+      partial_data<-data.frame(cbind("NA", states[i]))
+      colnames(partial_data)<- c("Hospital","State")}
+    else{partial_data<-partial_data[num,c(1,2)]}
+    
+    output_data<-rbind(output_data, partial_data)
+    
+  }
+  
 
-  for(state in states){table2[state]<-table[table[2,]==state,]}
   
-  #table2
-  
-  #table<-table[order(table$State, table$Rate,table$Hospital),]
-#  
- # if(num=="best"){table[1,1]}
-#  else if(num=="worst"){table[dim(table)[1],1]}
-#  else if(num>dim(table)[1]){return(NA)}
-#  else{table<-table[num,1]}
-  
-#  table
+   output_data 
+  #table
   
   
   
